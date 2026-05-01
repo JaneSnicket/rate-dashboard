@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - EXCHANGE_API_KEY=${EXCHANGE_API_KEY}
+      - DATABASE_URL=sqlite:///./rate_dashboard.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
