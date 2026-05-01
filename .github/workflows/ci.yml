@@ -1,0 +1,12 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 준비 중
+        run: echo "CI 준비 중입니다"
