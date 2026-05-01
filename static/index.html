@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>환율 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+        header { background: #1a73e8; color: white; padding: 20px 40px; }
+        header h1 { font-size: 1.5rem; }
+        header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card .currency { font-size: 0.85rem; color: #888; margin-bottom: 6px; }
+        .card .rate { font-size: 1.6rem; font-weight: 700; }
+        .card .change { font-size: 0.9rem; margin-top: 4px; }
+        .up { color: #e53935; }
+        .down { color: #1e88e5; }
+        .chart-section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        .chart-section h2 { font-size: 1rem; margin-bottom: 8px; color: #555; }
+        .select-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        select, button { padding: 8px 16px; border-radius: 8px; border: 1px solid #ddd; font-size: 0.9rem; cursor: pointer; }
+        button { background: #1a73e8; color: white; border: none; }
+        button:hover { background: #1558b0; }
+        .collect-btn { display: block; margin: 0 auto 30px; padding: 12px 32px; font-size: 1rem; }
+        #status { text-align: center; margin-bottom: 16px; color: #555; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>📈 실시간 환율 대시보드</h1>
+    <p>USD 기준 주요 통화 환율 모니터링</p>
+</header>
+<div class="container">
+    <p id="status">데이터를 불러오는 중...</p>
+    <button class="collect-btn" onclick="collectData()">🔄 최신 환율 수집</button>
+    <div class="card-grid" id="cards"></div>
+    <div class="chart-section">
+        <h2>📊 환율 이력 차트</h2>
+        <div class="select-row">
+            <select id="currencySelect">
+                <option value="KRW">KRW (원)</option>
+                <option value="EUR">EUR (유로)</option>
+                <option value="JPY">JPY (엔)</option>
+                <option value="CNY">CNY (위안)</option>
+                <option value="GBP">GBP (파운드)</option>
+            </select>
+            <button onclick="loadChart()">조회</button>
+        </div>
+        <canvas id="rateChart" height="100"></canvas>
+    </div>
+</div>
+<script>
+    let chart = null;
+
+    async function loadLatest() {
+        try {
+            const res = await fetch('/rates/latest');
+            if (!res.ok) {
+                document.getElementById('status').textContent = '⚠️ 데이터 없음. 위 버튼으로 수집하세요.';
+                return;
+            }
+            const data = await res.json();
+            document.getElementById('status').textContent = `✅ 마지막 업데이트: ${new Date(data[0].collected_at + 'Z').toLocaleString('ko-KR')}`;
+            const cards = document.getElementById('cards');
+            cards.innerHTML = '';
+            data.forEach(item => {
+                const sign = item.change_percent >= 0 ? '+' : '';
+                const cls = item.change_percent >= 0 ? 'up' : 'down';
+                cards.innerHTML += `
+                    <div class="card">
+                        <div class="currency">USD → ${item.currency}</div>
+                        <div class="rate">${item.rate.toLocaleString()}</div>
+                        <div class="change ${cls}">${sign}${item.change_percent.toFixed(4)}%</div>
+                    </div>`;
+            });
+        } catch (e) {
+            document.getElementById('status').textContent = '❌ 서버 연결 실패';
+        }
+    }
+
+    async function collectData() {
+        document.getElementById('status').textContent = '수집 중...';
+        await fetch('/rates/collect', { method: 'POST' });
+        await loadLatest();
+        await loadChart();
+    }
+
+    async function loadChart() {
+        const currency = document.getElementById('currencySelect').value;
+        const res = await fetch(`/rates/history/${currency}?limit=30`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const reversed = data.reverse();
+        const labels = reversed.map(d => new Date(d.collected_at + 'Z').toLocaleDateString('ko-KR'));
+        const rates = reversed.map(d => d.rate);
+
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('rateChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: `USD → ${currency}`,
+                    data: rates,
+                    borderColor: '#1a73e8',
+                    backgroundColor: 'rgba(26,115,232,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    }
+
+    loadLatest();
+    loadChart();
+</script>
+</body>
+</html>
