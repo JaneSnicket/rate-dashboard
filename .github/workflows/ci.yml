@@ -3,10 +3,46 @@ name: CI Pipeline
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  placeholder:
+  test:
+    name: 테스트 실행
     runs-on: ubuntu-latest
+
     steps:
-      - name: 준비 중
-        run: echo "CI 준비 중입니다"
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: pytest 실행
+        env:
+          EXCHANGE_API_KEY: test_key
+          DATABASE_URL: sqlite:///./test.db
+        run: pytest tests/ -v --tb=short
+
+      - name: 커버리지 리포트
+        env:
+          EXCHANGE_API_KEY: test_key
+          DATABASE_URL: sqlite:///./test.db
+        run: pytest tests/ --cov=app --cov-report=term-missing
+
+  build:
+    name: Docker 빌드 확인
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker 이미지 빌드
+        run: docker build -t rate-dashboard .
