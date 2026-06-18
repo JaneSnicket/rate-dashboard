@@ -18,7 +18,7 @@ def setup_db():
 def get_session():
     return TestingSessionLocal()
 
-# ExchangeRate 테스트 (중간과제 유지)
+# ExchangeRate 테스트 (중간과제)
 
 def test_create_exchange_rate():
     """환율 데이터 DB 저장"""
