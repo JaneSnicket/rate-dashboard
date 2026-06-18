@@ -10,4 +10,21 @@ services:
       - DATABASE_URL=sqlite:///./rate_dashboard.db
     volumes:
       - ./data:/app/data
+      - ./models:/app/models          
+      - ./mlflow.db:/app/mlflow.db    
+    restart: unless-stopped
+
+  mlflow:
+    image: python:3.11-slim
+    container_name: mlflow_server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow.db:/app/mlflow.db
+      - ./mlruns:/app/mlruns
+    working_dir: /app
+    command: >
+      bash -c "pip install --no-cache-dir mlflow==2.17.0 &&
+               mlflow ui --backend-store-uri sqlite:////app/mlflow.db
+               --host 0.0.0.0 --port 5000"
     restart: unless-stopped

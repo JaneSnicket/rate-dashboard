@@ -1,14 +1,12 @@
 {
-  "version": "v1",
-  "model_name": "ridge",
-  "rolled_back_at": "20260619_054901",
-  "rolled_back_from": "v2",
-  "rolled_back_to_file": "v1_20260619_045313.pkl",
-  "is_rollback": true,
-  "original_metrics": {
-    "rmse": 5.128937268507728,
-    "mae": 4.320631098211618,
-    "r2": -0.7933122302101892
+  "version": "v3",
+  "version_number": 3,
+  "model_name": "linear_regression",
+  "trained_at": "20260619_071625",
+  "metrics": {
+    "rmse": 2.2737367544323206e-13,
+    "mae": 2.2737367544323206e-13,
+    "r2": 0.0
   },
   "feature_cols": [
     "lag_1",
@@ -17,5 +15,6 @@
     "rolling_mean_7",
     "rolling_std_7"
   ],
-  "version_number": 2
+  "mlflow_run_id": "24758eeb909a443fbfd3c9cb65f00c35",
+  "versioned_file": "v3_20260619_071625.pkl"
 }

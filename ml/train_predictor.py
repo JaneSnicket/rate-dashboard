@@ -184,10 +184,16 @@ def main():
     print(f"[INFO] Train: {len(X_train)}, Test: {len(X_test)}")
 
     # 3. 3개 모델 학습 & MLflow 기록
+    # [재학습 v2] 하이퍼파라미터 튜닝:
+    #   - Ridge: alpha 1.0 → 0.5 (정규화 약화로 underfitting 완화)
+    #   - RandomForest: n_estimators 50 → 200 (트리 수 증가로 표현력 강화)
+    #                   max_depth=5 추가 (overfitting 방지)
     models = [
         ("linear_regression", LinearRegression()),
-        ("ridge", Ridge(alpha=1.0)),
-        ("random_forest", RandomForestRegressor(n_estimators=50, random_state=42)),
+        ("ridge", Ridge(alpha=0.5)),
+        ("random_forest", RandomForestRegressor(
+            n_estimators=200, max_depth=5, random_state=42
+        )),
     ]
     results = []
     for name, model in models:
