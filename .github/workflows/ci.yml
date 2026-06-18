@@ -10,7 +10,6 @@ jobs:
   test:
     name: 테스트 실행
     runs-on: ubuntu-latest
-
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -35,11 +34,31 @@ jobs:
           DATABASE_URL: sqlite:///./test.db
         run: pytest tests/ --cov=app --cov-report=term-missing
 
+  train_model:
+    name: AI 모델 재학습 및 MLflow 기록
+    runs-on: ubuntu-latest
+    needs: test # 테스트가 통과해야만 학습 시작
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+        
+      - name: 환율 등락 예측 모델 학습 및 MLflow 전송
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }} 
+        run: python -m ml.train
+
   build:
     name: Docker 빌드 확인
     runs-on: ubuntu-latest
     needs: test
-
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
