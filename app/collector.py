@@ -9,7 +9,6 @@ load_dotenv()
 
 API_KEY = os.getenv("EXCHANGE_API_KEY", "")
 BASE_URL = f"https://v6.exchangerate-api.com/v6/{API_KEY}/latest/USD"
-
 TARGET_CURRENCIES = ["KRW", "EUR", "JPY", "CNY", "GBP"]
 
 def fetch_exchange_rates() -> dict:
@@ -21,10 +20,8 @@ def fetch_exchange_rates() -> dict:
         "CNY": 7.24,
         "GBP": 0.79
     }
-
     if not API_KEY or API_KEY == "your_api_key_here" or API_KEY == "test_key":
         return dummy_data
-
     try:
         response = requests.get(BASE_URL, timeout=10)
         response.raise_for_status()
@@ -47,7 +44,6 @@ def save_rates(db: Session) -> list:
     """환율 데이터를 수집하고 DB에 저장"""
     rates = fetch_exchange_rates()
     saved = []
-
     for currency, rate in rates.items():
         previous = (
             db.query(ExchangeRate)
@@ -67,6 +63,5 @@ def save_rates(db: Session) -> list:
         )
         db.add(new_rate)
         saved.append(new_rate)
-
     db.commit()
     return saved
