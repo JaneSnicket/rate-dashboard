@@ -5,17 +5,19 @@ __pycache__/
 .pytest_cache/
 # ML artifacts
 mlruns/
-models/predictor/*.pkl
-models/predictor/*.joblib
-models/detector/*.pkl
-models/detector/*.joblib
 !models/predictor/.gitkeep
 !models/detector/.gitkeep
-models/detector/metadata.json
+# models/detector/metadata.json
 
 # 임시 파일
 *.csv.tmp
 data_cache/
 test_models.db
-models/predictor/metadata.json
+# models/predictor/metadata.json
 mlflow.db
+
+# 운영용 모델은 git에 포함 (Render 배포 시 필요)
+# models/predictor/*.pkl
+# models/predictor/*.joblib
+# models/detector/*.pkl
+# models/detector/*.joblib

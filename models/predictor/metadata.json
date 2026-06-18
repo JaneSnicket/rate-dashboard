@@ -1,0 +1,21 @@
+{
+  "version": "v1",
+  "model_name": "ridge",
+  "rolled_back_at": "20260619_054901",
+  "rolled_back_from": "v2",
+  "rolled_back_to_file": "v1_20260619_045313.pkl",
+  "is_rollback": true,
+  "original_metrics": {
+    "rmse": 5.128937268507728,
+    "mae": 4.320631098211618,
+    "r2": -0.7933122302101892
+  },
+  "feature_cols": [
+    "lag_1",
+    "lag_3",
+    "lag_7",
+    "rolling_mean_7",
+    "rolling_std_7"
+  ],
+  "version_number": 2
+}

@@ -1,0 +1,24 @@
+{
+  "version": "v1",
+  "version_number": 1,
+  "model_name": "isolation_forest",
+  "trained_at": "20260619_052129",
+  "metrics": {
+    "n_anomalies_detected": 5,
+    "anomaly_ratio": 0.05,
+    "min_score": -0.7575988609826781,
+    "max_score": -0.381018257920876,
+    "mean_score": -0.4534480596480743
+  },
+  "hyperparameters": {
+    "contamination": 0.05,
+    "n_estimators": 100
+  },
+  "feature_cols": [
+    "rate",
+    "change_percent",
+    "abs_change"
+  ],
+  "mlflow_run_id": "f526869f929546dab470a0fd2d360577",
+  "versioned_file": "v1_20260619_052129.pkl"
+}
