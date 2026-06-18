@@ -16,9 +16,5 @@
     "rolling_std_7"
   ],
   "mlflow_run_id": "2de51d5798e342cf809ac06abac309ca",
-  "versioned_file": "v6_20260619_075333.pkl",
-  "rolled_back_at": "20260619_075929",
-  "rolled_back_from": "v7",
-  "rolled_back_to_file": "v6_20260619_075333.pkl",
-  "is_rollback": true
+  "versioned_file": "v6_20260619_075333.pkl"
 }

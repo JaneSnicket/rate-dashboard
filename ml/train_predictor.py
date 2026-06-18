@@ -127,6 +127,7 @@ def train_one_model(name, model, X_train, X_test, y_train, y_test, feature_cols)
 
 def save_best_model(best_result, feature_cols):
     """최고 성능 모델을 운영 디렉토리에 저장 + 메타데이터 기록"""
+    # 새 버전 번호 결정
     metadata_path = MODEL_DIR / "metadata.json"
     if metadata_path.exists():
         with open(metadata_path, "r", encoding="utf-8") as f:
@@ -144,7 +145,7 @@ def save_best_model(best_result, feature_cols):
     joblib.dump(best_result["model"], versioned_path)
     joblib.dump(best_result["model"], current_path)
 
-    # 메타데이터 기록
+    # 메타데이터 (모든 버전 정보)
     metadata = {
         "version": version_str,
         "version_number": next_version,
@@ -159,12 +160,18 @@ def save_best_model(best_result, feature_cols):
         "mlflow_run_id": best_result["run_id"],
         "versioned_file": versioned_path.name,
     }
+    # 현재 운영 메타데이터
     with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
+    # 버전별 메타데이터 백업 (롤백 시 사용)
+    versioned_meta_path = MODEL_DIR / f"{version_str}_meta.json"
+    with open(versioned_meta_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
 
     print(f"\n[SAVE] {version_str} ({best_result['name']}) → {current_path}")
     print(f"[SAVE] 백업: {versioned_path.name}")
     print(f"[SAVE] 메타데이터: {metadata_path}")
+    print(f"[SAVE] 버전별 메타: {versioned_meta_path.name}")
 
 
 def main():

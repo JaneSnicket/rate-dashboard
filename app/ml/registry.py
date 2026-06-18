@@ -87,29 +87,38 @@ class ModelRegistry:
         if not target_path.exists():
             raise FileNotFoundError(f"대상 버전 파일 없음: {version_filename}")
 
-        # 롤백 전 현재 메타데이터 백업
+        # 롤백 전 현재 버전 (롤백 이력 기록용)
         previous_version = self.get_current_version()
 
-        # current.pkl을 새 버전으로 교체
+        # current.pkl을 대상 버전으로 교체
         shutil.copy2(target_path, self.current_path)
 
-        # 메타데이터 갱신 (롤백 이력 기록)
-        version_str = version_filename.split("_")[0]  # "v2_20260619_..." → "v2"
+        # 대상 버전 문자열 추출 (예: "v2_20260619_..." → "v2")
+        version_str = version_filename.split("_")[0]
+
+        # 대상 버전의 메타데이터 파일 찾기 (롤백 대상의 정보로 복원)
+        target_meta_path = self.dir / f"{version_str}_meta.json"
+        if target_meta_path.exists():
+            with open(target_meta_path, "r", encoding="utf-8") as f:
+                target_meta = json.load(f)
+        else:
+            # 버전별 메타 파일이 없는 구버전 → 최소 정보로 fallback
+            target_meta = {
+                "version": version_str,
+                "model_name": "unknown",
+                "metrics": {},
+                "feature_cols": [],
+                "version_number": int(version_str[1:]) if version_str[1:].isdigit() else 0,
+            }
+
+        # 롤백 정보 추가 (대상 버전 메타 + 롤백 이력)
         rollback_info = {
-            "version": version_str,
-            "model_name": self.get_metadata().get("model_name", "unknown"),
+            **target_meta,  # 대상 버전의 정보 복원
             "rolled_back_at": datetime.now().strftime("%Y%m%d_%H%M%S"),
             "rolled_back_from": previous_version,
             "rolled_back_to_file": version_filename,
             "is_rollback": True,
         }
-
-        # 기존 메타데이터에 롤백 정보 병합
-        meta = self.get_metadata()
-        if "error" not in meta:
-            rollback_info["original_metrics"] = meta.get("metrics", {})
-            rollback_info["feature_cols"] = meta.get("feature_cols", [])
-            rollback_info["version_number"] = meta.get("version_number", 0)
 
         with open(self.metadata_path, "w", encoding="utf-8") as f:
             json.dump(rollback_info, f, indent=2, ensure_ascii=False)

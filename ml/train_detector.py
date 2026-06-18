@@ -181,10 +181,13 @@ def save_model(result, feature_cols):
     }
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
+    # 버전별 메타데이터 백업 (롤백 시 사용)
+    versioned_meta_path = MODEL_DIR / f"{version_str}_meta.json"
+    with open(versioned_meta_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
 
     print(f"\n[SAVE] {version_str} (isolation_forest) → {current_path}")
-    print(f"[SAVE] 백업: {versioned_path.name}")
-    print(f"[SAVE] 메타데이터: {metadata_path}")
+    print(f"[SAVE] 버전별 메타: {versioned_meta_path.name}")
 
 
 def main():

@@ -1,0 +1,20 @@
+{
+  "version": "v5",
+  "version_number": 5,
+  "model_name": "linear_regression",
+  "trained_at": "20260619_074908",
+  "metrics": {
+    "rmse": 2.2737367544323206e-13,
+    "mae": 2.2737367544323206e-13,
+    "r2": 0.0
+  },
+  "feature_cols": [
+    "lag_1",
+    "lag_3",
+    "lag_7",
+    "rolling_mean_7",
+    "rolling_std_7"
+  ],
+  "mlflow_run_id": "42bcd75f7d9d4d94b2b2c726042bece5",
+  "versioned_file": "v5_20260619_074908.pkl"
+}
