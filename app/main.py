@@ -24,7 +24,7 @@ def root():
 def health_check():
     return {"status": "ok"}
 
-@router.get("/predict/{currency}")
+@app.get("/predict/{currency}")
 def get_prediction(currency: str):
     """지정된 통화의 내일 환율 등락 예측 결과를 반환합니다."""
     result, msg = predict_tomorrow(currency)
