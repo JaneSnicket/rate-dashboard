@@ -1,5 +1,4 @@
 name: CI Pipeline
-
 on:
   push:
     branches: [ main ]
@@ -22,7 +21,7 @@ jobs:
       - name: 패키지 설치
         run: pip install -r requirements.txt
 
-      - name: pytest 실행
+      - name: pytest 실행 (전체 테스트)
         env:
           EXCHANGE_API_KEY: test_key
           DATABASE_URL: sqlite:///./test.db
@@ -33,7 +32,38 @@ jobs:
           EXCHANGE_API_KEY: test_key
           DATABASE_URL: sqlite:///./test.db
         run: pytest tests/ --cov=app --cov-report=term-missing
-        
+
+  ml_smoke_test:
+    name: ML 학습 스크립트 동작 확인
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: Predictor 학습 스모크 테스트
+        run: python -m ml.train_predictor
+
+      - name: Detector 학습 스모크 테스트
+        run: python -m ml.train_detector
+
+      - name: 학습된 모델 파일 확인
+        run: |
+          ls -la models/predictor/
+          ls -la models/detector/
+          test -f models/predictor/current.pkl
+          test -f models/detector/current.pkl
+          test -f models/predictor/metadata.json
+          test -f models/detector/metadata.json
+
   build:
     name: Docker 빌드 확인
     runs-on: ubuntu-latest

@@ -1,0 +1,70 @@
+name: 모델 재학습 파이프라인
+
+# 수동 트리거 + 스케줄
+on:
+  workflow_dispatch:
+    inputs:
+      model_type:
+        description: '재학습할 모델 종류'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - predictor
+          - detector
+          - both
+  schedule:
+    # 매주 월요일 오전 9시 KST
+    - cron: '0 0 * * 1'
+
+jobs:
+  retrain:
+    name: 모델 재학습 실행
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: Predictor 재학습
+        if: ${{ github.event.inputs.model_type == 'predictor' || github.event.inputs.model_type == 'both' || github.event_name == 'schedule' }}
+        run: |
+          echo "=== Predictor 재학습 시작 ==="
+          python -m ml.train_predictor
+
+      - name: Detector 재학습
+        if: ${{ github.event.inputs.model_type == 'detector' || github.event.inputs.model_type == 'both' || github.event_name == 'schedule' }}
+        run: |
+          echo "=== Detector 재학습 시작 ==="
+          python -m ml.train_detector
+
+      - name: 학습 결과 출력
+        run: |
+          echo "=== 학습된 모델 메타데이터 ==="
+          if [ -f models/predictor/metadata.json ]; then
+            echo "[Predictor]"
+            cat models/predictor/metadata.json
+          fi
+          if [ -f models/detector/metadata.json ]; then
+            echo "[Detector]"
+            cat models/detector/metadata.json
+          fi
+
+      - name: 학습된 모델 아티팩트 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-models-${{ github.run_number }}
+          path: |
+            models/predictor/*.pkl
+            models/predictor/metadata.json
+            models/detector/*.pkl
+            models/detector/metadata.json
+            mlflow.db
+          retention-days: 30
