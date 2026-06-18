@@ -66,15 +66,30 @@ def train_model(currency="KRW"):
         acc = accuracy_score(y_test, predictions)
         print(f" [{currency}] 모델 학습 완료. 테스트 정확도: {acc:.4f}")
 
-        # MLflow에 파라미터 및 결과 기록
+       # MLflow에 파라미터 및 결과 기록
         mlflow.log_param("currency", currency)
         mlflow.log_param("model_type", "RandomForest")
-        mlflow.log_param("n_estimators", 100)
         mlflow.log_metric("accuracy", acc)
 
-        # 모델 파일(Artifact) 저장
-        mlflow.sklearn.log_model(model, "model")
-        print(f"MLflow Run ID: {run.info.run_id}")
+        # 1. 모델 파일 저장 및 레지스트리에 정식 등록
+        model_name = f"Exchange-Rate-Model-{currency}"
+        mlflow.sklearn.log_model(model, "model", registered_model_name=model_name)
+        
+        # 2. 모델 검증 및 Alias 부여 로직
+        client = mlflow.MlflowClient()
+        # 방금 등록된 최신 모델의 버전 가져오기
+        model_version_details = client.get_latest_versions(model_name, stages=["None"])[0]
+        latest_version = model_version_details.version
+        
+        print(f"정식 등록 완료. 모델명: {model_name}, 버전: v{latest_version}")
+
+        # 정확도가 0.6(60%) 이상일 때만 실제 서비스에 반영(champion 별칭 부여)
+        if acc >= 0.6:
+            client.set_registered_model_alias(model_name, "champion", latest_version)
+            print(f"정확도 {acc:.2f} 통과! v{latest_version} 모델이 'champion'으로 서비스에 반영됨.")
+        else:
+            client.set_registered_model_alias(model_name, "challenger", latest_version)
+            print(f"정확도 미달({acc:.2f}). 서비스에 반영되지 않고 'challenger'로 보류")
 
 if __name__ == "__main__":
     train_model("KRW")

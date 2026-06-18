@@ -13,27 +13,15 @@ engine = create_engine(DATABASE_URL)
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 def predict_tomorrow(currency="KRW"):
-    """최신 모델과 최신 환율 데이터를 불러와 내일의 등락 예측"""
-    # 1. MLflow에서 해당 통화의 최신 '1세대' 모델 불러오기
+    """최신 모델과 최신 환율 데이터를 불러와 내일의 등락을 예측합니다."""
+    model_name = f"Exchange-Rate-Model-{currency}"
+    model_uri = f"models:/{model_name}@champion"
+    
     try:
-        experiment = mlflow.get_experiment_by_name("Exchange-Rate-Prediction")
-        if not experiment: 
-            return None, "실험 데이터 없음"
-        
-        runs = mlflow.search_runs(experiment_ids=[experiment.experiment_id])
-        if runs.empty: 
-            return None, "학습된 모델 없음"
-        currency_runs = runs[runs["params.currency"] == currency]
-        if currency_runs.empty: 
-            return None, f"{currency} 통화에 대한 모델이 없음"
-        
-        latest_run_id = currency_runs.iloc[0]["run_id"]
-        model_uri = f"runs:/{latest_run_id}/model"
-        
-        # 모델 메모리에 로드
+        # MLflow 레지스트리에서 champion 모델 불러오기
         model = mlflow.pyfunc.load_model(model_uri)
     except Exception as e:
-        return None, f"모델 로딩 에러: {e}"
+        return None, f"서비스 가능한(champion) 모델이 없습니다: {e}"
 
     # 2. 로컬 DB에서 오늘(가장 최근) 환율 데이터 1줄만 가져오기
     query = f"SELECT rate, change_percent FROM exchange_rates WHERE target_currency = '{currency}' ORDER BY collected_at DESC LIMIT 1"
