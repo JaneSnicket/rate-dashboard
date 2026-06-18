@@ -3,3 +3,18 @@ __pycache__/
 *.db
 .env
 .pytest_cache/
+# ML artifacts
+mlruns/
+models/predictor/*.pkl
+models/predictor/*.joblib
+models/detector/*.pkl
+models/detector/*.joblib
+!models/predictor/.gitkeep
+!models/detector/.gitkeep
+
+# 임시 파일
+*.csv.tmp
+data_cache/
+test_models.db
+models/predictor/metadata.json
+mlflow.db
