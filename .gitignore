@@ -11,6 +11,7 @@ models/detector/*.pkl
 models/detector/*.joblib
 !models/predictor/.gitkeep
 !models/detector/.gitkeep
+models/detector/metadata.json
 
 # 임시 파일
 *.csv.tmp
